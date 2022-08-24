@@ -1,39 +1,93 @@
 import { useState } from 'react'
 
 const App = () => {
-  const anecdotes = [
-    'If it hurts, do it more often.',
-    'Adding manpower to a late software project makes it later!',
-    'The first 90 percent of the code accounts for the first 10 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-    'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-    'Premature optimization is the root of all evil.',
-    'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
-    'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.'
-  ];
-   
-  const [selected, setSelected] = useState(0);
-  const [votes, setVotes] = useState({ 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 });
+  const [persons, setPersons] = useState([
+    { name: 'Arto Hellas', number: '040-123456', id: 1 },
+    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
+    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
+    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
+  ])
+  const [filteredPersons, setFilteredPersons] = useState([
+    { name: 'Arto Hellas', number: '040-123456', id: 1 },
+    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
+    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
+    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
+  ]) 
+  const [newName, setNewName] = useState('')
+  const [newNumber, setNewNumber] = useState('')
+  const [searchName, setSearchName] = useState('')
 
-  const randomIntFromInterval = (min, max) => 
-    Math.floor(Math.random() * (max - min + 1) + min)
 
-  const voteForAnecdote = () => {
-    const copy = { ...votes };
-    copy[selected] += 1;
-    setVotes(copy);
+  const addPerson = (event) => {
+    event.preventDefault();
+    if (newName === '' || newNumber === '') {
+      return alert('Both fields cannot be empty');
+    }
+    if (persons.find((person) => person.name === newName) || persons.find((person) => person.number === newNumber)) {
+      return alert(`Same value is already added to phonebook`);
+    }
+    const newPerson = {name: newName, number: newNumber};
+    setPersons(persons.concat(newPerson));
+    setFilteredPersons(persons.concat(newPerson));
+    setNewName('')
+    setNewNumber('')
+  }
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value)
+  }
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value)
+  }
+
+  const handleSearchName = (event) => {
+    console.log('Changed')
+    setSearchName(event.target.value)
+    const filtered = persons.filter((person) => person.name.toLowerCase().startsWith(event.target.value))
+    setFilteredPersons(filtered)
   }
 
   return (
     <div>
-      <h1>Anecdote of the day</h1>
-      {anecdotes[selected]}
-      <br />
-      <p>has {votes[selected]} votes</p>
-      <button onClick={() => voteForAnecdote()}>vote</button>
-      <button onClick={() => setSelected(randomIntFromInterval(0, anecdotes.length-1))}>next anecdote</button>
-      <h1>Anecdote with most votes</h1>
-      <p>{anecdotes[Object.keys(votes).reduce((a, b) => votes[a] > votes[b] ? a : b)]}</p>
+      <h2>Phonebook</h2>
+      <Filter searchName={searchName} handleChange={handleSearchName}/>
+      <h3>Add a new</h3>
+      <PersonForm addPerson={addPerson} newName={newName} newNumber={newNumber} nameChange={handleNameChange} numChange={handleNumberChange}/>
+      <h2>Numbers</h2>
+      <Persons filteredPersons={filteredPersons}/>
+      
     </div>
+  )
+}
+
+const Filter = (props) => {
+  return (
+    <>
+      filter shown with <input value={props.searchName} onChange={props.handleChange}/>
+    </>
+  )
+}
+
+const PersonForm = (props) => {
+  return (
+    <form onSubmit={props.addPerson}>
+      <div>
+        name: <input value={props.newName} onChange={props.nameChange}/>
+      </div>
+      <div>
+        number: <input value={props.newNumber} onChange={props.numChange}/>
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  )
+}
+
+const Persons = (props) => {
+  return (
+    props.filteredPersons.map((person) => <p key={person.id}>{person.name} {person.number}</p>)
   )
 }
 
